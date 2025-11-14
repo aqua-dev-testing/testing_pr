@@ -1,30 +1,49 @@
-name: Aqua
+name: Aqua Supply Chain Scan
+
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  aqua:
-    name: Aqua scanner
+  aqua-scan:
+    name: Run Aqua Security Scanner
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Checkout your repository code
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Step 2: Update Aqua plugin to the latest version
+      # This ensures compatibility with --skip-policy-bundle
+      - name: Update Aqua plugin
+        run: |
+          docker run --rm aquasec/aqua-scanner plugin update aqua
+
+      # Step 3: Run Aqua scanner
       - name: Run Aqua scanner
         uses: docker://aquasec/aqua-scanner
         with:
-          # Updated args line with skip-policy-bundle flag
-          args: trivy fs --scanners vuln,misconfig,secret 
-          # Optional: add --debug if you want verbose logs
-          # args: trivy fs --scanners vuln,misconfig,secret --skip-policy-bundle --debug
+          # Option A (Recommended, safe): skip custom checks to avoid 500 errors
+          args: trivy fs --scanners vuln,misconfig,secret --skip-policy-bundle
+          # Option B (if your tenant’s /custom-checks is fixed): remove --skip-policy-bundle
+
         env:
+          # Aqua credentials (stored securely in GitHub secrets)
           AQUA_KEY: ${{ secrets.AQUA_KEY }}
           AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
-          GITHUB_TOKEN: ${{ github.token }}
+
+          # Production endpoints for Aqua Supply Chain
+          AQUA_URL: https://api.supply-chain.cloud.aquasec.com
+          CSPM_URL: https://api.cloudsploit.com
+
+          # Aqua plugin configuration
           TRIVY_RUN_AS_PLUGIN: 'aqua'
-          # Add these only if needed:
-          # AQUA_URL: https://api.supply-chain.cloud.aquasec.com
-          # CSPM_URL: https://api.cloudsploit.com
-          # For http/https proxy configuration add env vars: HTTP_PROXY/HTTPS_PROXY, CA-CERT (path to CA certificate)
+          GITHUB_TOKEN: ${{ github.token }}
+
+          # Optional proxy configuration (uncomment if needed)
+          # HTTP_PROXY: http://proxy.company.local:8080
+          # HTTPS_PROXY: http://proxy.company.local:8080
+          # CA_CERT: /path/to/cacert.pem
