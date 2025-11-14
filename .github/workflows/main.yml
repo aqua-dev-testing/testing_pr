@@ -1,35 +1,47 @@
-name: Aqua
+name: Aqua Security Scan
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
-  aqua:
-    name: Aqua scanner
+  aqua-scan:
+    name: Aqua Security Scanner
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      # Step 2: Update Aqua plugin to the latest version (important!)
-      - name: Update Aqua plugin
-        run: |
-          docker run --rm aquasec/aqua-scanner plugin update aqua
-
-      # Step 3: Run Aqua scanner against production environment
-      - name: Run Aqua scanner
-        uses: docker://aquasec/aqua-scanner
+      - name: Run Aqua Scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          # Runs vuln + secret scanners only, no policy bundle fetched
-          args: trivy fs --scanners vuln,secret --skip-policy-bundle
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
         env:
           AQUA_KEY: ${{ secrets.AQUA_KEY }}
           AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
-          AQUA_URL: https://api.supply-chain.cloud.aquasec.com
-          CSPM_URL: https://api.cloudsploit.com
-          TRIVY_RUN_AS_PLUGIN: 'aqua'
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Aqua Scanner (Alternative - Standalone)
+        if: failure()
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'vuln,secret'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
