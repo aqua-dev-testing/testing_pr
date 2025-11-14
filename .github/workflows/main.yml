@@ -16,7 +16,7 @@ jobs:
         uses: docker://aquasec/aqua-scanner
         with:
           # Updated args line with skip-policy-bundle flag
-          args: trivy fs --scanners vuln,misconfig,secret --skip-policy-bundle
+          args: trivy fs --scanners vuln,misconfig,secret 
           # Optional: add --debug if you want verbose logs
           # args: trivy fs --scanners vuln,misconfig,secret --skip-policy-bundle --debug
         env:
