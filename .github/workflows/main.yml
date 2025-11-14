@@ -7,6 +7,12 @@ on:
     branches:
       - main
 
+# Required permissions for uploading SARIF results
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   aqua-scan:
     name: Aqua Security Scanner
@@ -30,18 +36,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
 
-      - name: Run Aqua Scanner (Alternative - Standalone)
-        if: failure()
+      - name: Run Aqua Scanner with Console Output
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           scan-ref: '.'
           scanners: 'vuln,secret'
+          format: 'table'
           severity: 'CRITICAL,HIGH,MEDIUM'
         env:
+          AQUA_KEY: ${{ secrets.AQUA_KEY }}
+          AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
