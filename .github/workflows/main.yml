@@ -1,49 +1,27 @@
-name: Aqua Supply Chain Scan
-
+name: Aqua
 on:
   push:
     branches:
       - main
-  pull_request:
-
 jobs:
-  aqua-scan:
-    name: Run Aqua Security Scanner
+  aqua:
+    name: Aqua scanner
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout your repository code
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Update Aqua plugin to the latest version
-      # This ensures compatibility with --skip-policy-bundle
-      - name: Update Aqua plugin
-        run: |
-          docker run --rm aquasec/aqua-scanner plugin update aqua
-
-      # Step 3: Run Aqua scanner
       - name: Run Aqua scanner
         uses: docker://aquasec/aqua-scanner
         with:
-          # Option A (Recommended, safe): skip custom checks to avoid 500 errors
-          args: trivy fs --scanners vuln,misconfig,secret --skip-policy-bundle
-          # Option B (if your tenant’s /custom-checks is fixed): remove --skip-policy-bundle
-
+          args: trivy fs --scanners vuln,secret
+          # To customize which severities to scan for, add the following flag: --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          # To enable SAST scanning, add: --sast
+          # To enable reachability scanning, add: --reachability
+          # To enable npm/dotnet/gradle non-lock file scanning, add: --package-json / --dotnet-proj / --gradle
         env:
-          # Aqua credentials (stored securely in GitHub secrets)
           AQUA_KEY: ${{ secrets.AQUA_KEY }}
           AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
-
-          # Production endpoints for Aqua Supply Chain
-          AQUA_URL: https://api.supply-chain.cloud.aquasec.com
-          CSPM_URL: https://api.cloudsploit.com
-
-          # Aqua plugin configuration
-          TRIVY_RUN_AS_PLUGIN: 'aqua'
           GITHUB_TOKEN: ${{ github.token }}
-
-          # Optional proxy configuration (uncomment if needed)
-          # HTTP_PROXY: http://proxy.company.local:8080
-          # HTTPS_PROXY: http://proxy.company.local:8080
-          # CA_CERT: /path/to/cacert.pem
+          TRIVY_RUN_AS_PLUGIN: 'aqua'
+          # For http/https proxy configuration add env vars: HTTP_PROXY/HTTPS_PROXY, CA-CRET (path to CA certificate)
