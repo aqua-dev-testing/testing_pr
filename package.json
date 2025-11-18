@@ -23,7 +23,7 @@
     "decode-uri-component": "0.2.0",
     "json-schema": "0.2.3",
     "word-wrap": "1.2.3",
-    "glob-parent": "5.1.2",
+    "glob-parent": "5.1.2"
   },
   "keywords": [
     "test",
