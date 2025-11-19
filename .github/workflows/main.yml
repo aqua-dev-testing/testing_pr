@@ -9,6 +9,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0   # IMPORTANT for default branch detection
+
+      # 🔍 FULL TRIVY REPO METADATA DEBUG
+      - name: Print Full Trivy Repo Metadata
+        uses: docker://aquasec/aqua-scanner:dev
+        with:
+          args: >
+            sh -c "
+              echo '===== FULL TRIVY REPO METADATA =====';
+              trivy repo info --skip-db-update --format json
+            "
+        env:
+          TRIVY_RUN_AS_PLUGIN: 'aqua'
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Run Aqua scanner (repo info + scan)
         uses: docker://aquasec/aqua-scanner:dev
@@ -16,7 +31,7 @@ jobs:
           args: >
             sh -c "
               echo '===== Trivy Repo Info =====';
-              trivy repo info --format json;
+              trivy repo info --skip-db-update --format json;
 
               echo '===== Running Trivy FS Scan =====';
               trivy fs --debug --scanners misconfig,vuln,secret .
