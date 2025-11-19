@@ -10,9 +10,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0   # IMPORTANT for default branch detection
+          fetch-depth: 0   # REQUIRED so Trivy can detect default branch
 
-      # 🔍 FULL TRIVY REPO METADATA DEBUG
+      # 🔍 STEP 1 — WARMUP DB (FAST)
+      - name: Warmup Trivy DB (Required for repo metadata)
+        uses: docker://aquasec/aqua-scanner:dev
+        with:
+          args: >
+            sh -c "
+              echo '===== WARMUP TRIVY DB =====';
+              trivy fs --scanners vuln . || true
+            "
+        env:
+          TRIVY_RUN_AS_PLUGIN: 'aqua'
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      # 🔍 STEP 2 — PRINT FULL REPO METADATA
       - name: Print Full Trivy Repo Metadata
         uses: docker://aquasec/aqua-scanner:dev
         with:
@@ -25,6 +38,7 @@ jobs:
           TRIVY_RUN_AS_PLUGIN: 'aqua'
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      # 🔍 STEP 3 — RUN NORMAL AQUA SCAN
       - name: Run Aqua scanner (repo info + scan)
         uses: docker://aquasec/aqua-scanner:dev
         with:
