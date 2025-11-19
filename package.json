@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "axios": "1.6.2",
+    
     "moment": "2.29.1",
     "xmldom": "0.6.0",
     "lodash": "4.17.20",
@@ -22,7 +24,9 @@
     "decode-uri-component": "0.2.0",
     "json-schema": "0.2.3",
     "word-wrap": "1.2.3",
+    
     "glob-parent": "5.1.2"
+
   },
   "keywords": [
     "test",
