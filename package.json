@@ -25,7 +25,6 @@
     "json-schema": "0.2.3",
     "word-wrap": "1.2.3",
     "glob-parent": "5.1.2"
-
   },
   "keywords": [
     "test",
