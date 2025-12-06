@@ -10,12 +10,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Break default branch detection (simulate customer error)
-        run: |
-          echo "Simulating failed 'git remote show origin'..."
-          git remote set-url origin https://integration.shared-services-prd.aws.cld.cma-cgm.com/gitlab/not-accessible/repo.git
-          git config credential.helper "!f() { echo 'auth broken'; return 1; }; f"
-          unset GITHUB_TOKEN || true
 
       - name: Run Aqua scanner
         uses: docker://aquasec/aqua-scanner
