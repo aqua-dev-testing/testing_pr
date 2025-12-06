@@ -15,7 +15,7 @@ jobs:
           git config --global credential.helper "!f() { echo 'auth blocked'; return 1; }; f"
 
       - name: Run Aqua scanner
-        uses: docker://aquasec/aqua-scanner
+        uses: docker://aquasec/aqua-scanner:dev
         with:
           args: trivy fs --scanners misconfig,vuln,secret .
         env:
@@ -25,3 +25,4 @@ jobs:
           AQUA_URL: https://api.dev.supply-chain.cloud.aquasec.com
           CSPM_URL: https://stage.api.cloudsploit.com
           TRIVY_RUN_AS_PLUGIN: 'aqua'
+          OVERRIDE_DEFAULT_BRANCH: "main"
