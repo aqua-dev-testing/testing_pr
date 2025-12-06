@@ -1,26 +1,36 @@
-name: Aqua
-on: pull_request
+name: Aqua - Reproduce Default Branch Issue
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   aqua:
-    name: Aqua scanner
+    name: Aqua scanner (Reproduce Issue)
     runs-on: ubuntu-latest
     steps:
+      # STEP 1: Checkout repo (creates .git so Trivy can attempt branch detection)
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run Aqua scanner
-        uses: docker://aquasec/aqua-scanner:dev
+      # STEP 2: BREAK GIT AUTH (simulate customer's authentication failure)
+      - name: Break default branch detection (simulate customer error)
+        run: |
+          echo "Simulating failed 'git remote show origin'..."
+          git remote set-url origin https://integration.shared-services-prd.aws.cld.cma-cgm.com/gitlab/not-accessible/repo.git
+          git config credential.helper "!f() { echo 'auth broken'; return 1; }; f"
+          unset GITHUB_TOKEN || true
+
+      # STEP 3: Run Aqua scanner WITHOUT OVERRIDE_DEFAULT_BRANCH
+      - name: Run Aqua scanner (no override)
+        uses: docker://aquasec/aqua-scanner
         with:
-          args: trivy fs --scanners misconfig,vuln,secret .
-          # To customize which severities to scan for, add the following flag: --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
-          # To enable SAST scanning, add: --sast
-          # To enable reachability scanning, add: --reachability
-          # To enable npm/dotnet/gradle non-lock file scanning, add: --package-json / --dotnet-proj / --gradle
+          args: trivy fs --scanners vuln,misconfig,secret .
         env:
           AQUA_KEY: ${{ secrets.AQUA_KEY }}
           AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           AQUA_URL: https://api.dev.supply-chain.cloud.aquasec.com
           CSPM_URL: https://stage.api.cloudsploit.com
-          TRIVY_RUN_AS_PLUGIN: 'aqua'
-          # For http/https proxy configuration add env vars: HTTP_PROXY/HTTPS_PROXY, CA-CRET (path to CA certificate)
+          TRIVY_RUN_AS_PLUGIN: "aqua"
+          # ❗ NO OVERRIDE_DEFAULT_BRANCH HERE
