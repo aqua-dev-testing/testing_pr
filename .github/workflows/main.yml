@@ -1,6 +1,8 @@
 name: Aqua
-on: pull_request
-
+on:
+  push:
+    branches:
+      - main
 jobs:
   aqua:
     name: Aqua scanner
@@ -24,4 +26,5 @@ jobs:
           AQUA_URL: https://api.dev.supply-chain.cloud.aquasec.com
           CSPM_URL: https://stage.api.cloudsploit.com
           TRIVY_RUN_AS_PLUGIN: 'aqua'
+          OVERRIDE_DEFAULT_BRANCH: 'fatima99s-patch-1'
           # For http/https proxy configuration add env vars: HTTP_PROXY/HTTPS_PROXY, CA-CRET (path to CA certificate)
