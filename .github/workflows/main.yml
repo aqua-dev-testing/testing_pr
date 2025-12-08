@@ -21,4 +21,4 @@ jobs:
           AQUA_URL: https://api.dev.supply-chain.cloud.aquasec.com
           CSPM_URL: https://stage.api.cloudsploit.com
           TRIVY_RUN_AS_PLUGIN: 'aqua'
-          OVERRIDE_DEFAULT_BRANCH: "main"
+          OVERRIDE_DEFAULT_BRANCH: "fatima99s-patch-1"
