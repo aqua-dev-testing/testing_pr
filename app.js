@@ -10,4 +10,5 @@ function runCommand(cmd) {
   exec(cmd); 
 }
 
+
 module.exports = { getUser, runCommand };
